@@ -1,0 +1,132 @@
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Scanner;
+import java.util.Set;
+
+public class LongestCommonWords {
+
+	/**
+	 * Finds the 10 longest words that appear in all the text files given
+	 * in fileNames.
+	 * 
+	 * @param fileNames Names of text files to read
+	 * @return Alphabetized array of longest overlapping words
+	 */
+	public static String[] FindLongestCommonWords(String[] fileNames) {
+		//array of list of common Strings
+		ArrayList<String>[] common = new ArrayList[fileNames.length];
+		
+		//add list of words from each file to array
+		for (int i = 0; i < fileNames.length; i++) {
+			FileReader reader;
+			ArrayList<String> word = new ArrayList<String>();
+			try {
+				reader = new FileReader(fileNames[i]);
+				BufferedReader in = new BufferedReader(reader);
+				String line;
+				while((line = in.readLine()) != null) {
+					// spilt words if they hold non letter chars
+					for (String s: line.split("[^a-zA-Z]")) {
+						if (s.length() >=8 && s.length() <= 50)
+						word.add(s);
+					}
+				}
+				common[i] = word;
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		ArrayList<String> temp = new ArrayList<String>(common[0]);
+		
+		// find the common words and add it to temp0
+		if (common.length != 1) {
+			for (int i = 1; i < common.length; i++)	
+				temp.retainAll(common[i]);
+		}
+		
+		// remove duplicates bug in retainAll
+		Set<String> set = new HashSet<String>(temp);
+		
+		temp = new ArrayList<String>(set);
+		
+		// find longest word
+		int longest = 0;
+		for (int i = 0; i < temp.size(); i++) {
+			if (longest < temp.get(i).length())
+				longest = temp.get(i).length();
+		}
+		
+		// add longer words
+		int countWords = 0;								// amount of words added
+		ArrayList<String> temp1 = new ArrayList<String>();
+		for (int i = 0; i < temp.size(); i++) {
+			if (temp.get(i).length() == longest) {
+				temp1.add(temp.get(i));
+				countWords++;
+			}
+		}
+		
+		// add more words if less than 10
+		int countSize = temp.size() - countWords;		// leftover words in temp
+		while (temp1.size() < 10 && countSize != 0) {
+			longest--;									// use the shorter word
+			for (int i = 0; i < temp.size(); i++) {
+				if (temp.get(i).length() == longest) {
+					temp1.add(temp.get(i));
+					countSize--;
+				} 
+			}
+		}
+		
+		// convert to array
+		String[] s = new String[temp1.size()];
+		for (int i = 0; i < temp1.size(); i++)
+			s[i] = temp1.get(i);
+		
+		// sort array
+		String temp2 = null;
+		for (int i = 0; i < s.length; i++) 
+        {
+            for (int j = i + 1; j < s.length; j++) 
+            { 
+                if (s[i].compareTo(s[j]) > 0) 
+                {
+                    temp2 = s[i];
+                    s[i] = s[j];
+                    s[j] = temp2;
+                }
+            }
+        }
+		
+		return s;
+	}
+
+	public static void main(String[] argv) {
+
+		Scanner sc = new Scanner(System.in);
+		ArrayList<String> nameList = new ArrayList<>();
+
+		System.out.printf("Enter text files, one per line (e.g. texts/test1.txt)\nHit enter an extra time to end the list: \n");
+
+		while (sc.hasNextLine()) {
+			String s = sc.nextLine();
+			if (s.equals(""))
+				break;
+			nameList.add(s);
+		}
+		sc.close();
+
+		String[] results = FindLongestCommonWords(nameList.toArray(new String[0]));
+
+		for (String s : results) {
+			System.out.println(s);
+		}
+	}
+}
